@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_admin
+from app.models.user import User
 from app.schemas.airport import AirportCreate, AirportRead, AirportUpdate
 from app.schemas.common import PaginatedResponse
 from app.services import airport_service
@@ -44,7 +46,11 @@ def get_airport(airport_id: int, db: Session = Depends(get_db)) -> AirportRead:
 
 
 @router.post("", response_model=AirportRead, status_code=status.HTTP_201_CREATED, summary="Create airport")
-def create_airport(data: AirportCreate, db: Session = Depends(get_db)) -> AirportRead:
+def create_airport(
+    data: AirportCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> AirportRead:
     """Create a new airport."""
     airport = airport_service.create_airport(db, data)
     return AirportRead.model_validate(airport)
@@ -52,13 +58,22 @@ def create_airport(data: AirportCreate, db: Session = Depends(get_db)) -> Airpor
 
 @router.put("/{airport_id}", response_model=AirportRead, summary="Update airport")
 @router.patch("/{airport_id}", response_model=AirportRead, summary="Patch airport")
-def update_airport(airport_id: int, data: AirportUpdate, db: Session = Depends(get_db)) -> AirportRead:
+def update_airport(
+    airport_id: int,
+    data: AirportUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> AirportRead:
     """Update an existing airport."""
     airport = airport_service.update_airport(db, airport_id, data)
     return AirportRead.model_validate(airport)
 
 
 @router.delete("/{airport_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete airport")
-def delete_airport(airport_id: int, db: Session = Depends(get_db)) -> None:
+def delete_airport(
+    airport_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> None:
     """Delete an airport by ID."""
     airport_service.delete_airport(db, airport_id)

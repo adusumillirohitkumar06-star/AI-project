@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_operator_or_above
+from app.models.user import User
 from app.schemas.common import PaginatedResponse
 from app.schemas.gate import GateCreate, GateRead, GateUpdate
 from app.services import gate_service
@@ -53,7 +55,11 @@ def get_gate(gate_id: int, db: Session = Depends(get_db)) -> GateRead:
 
 
 @router.post("", response_model=GateRead, status_code=status.HTTP_201_CREATED, summary="Create gate")
-def create_gate(data: GateCreate, db: Session = Depends(get_db)) -> GateRead:
+def create_gate(
+    data: GateCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> GateRead:
     """Create a new gate."""
     gate = gate_service.create_gate(db, data)
     return GateRead.model_validate(gate)
@@ -61,13 +67,22 @@ def create_gate(data: GateCreate, db: Session = Depends(get_db)) -> GateRead:
 
 @router.put("/{gate_id}", response_model=GateRead, summary="Update gate")
 @router.patch("/{gate_id}", response_model=GateRead, summary="Patch gate")
-def update_gate(gate_id: int, data: GateUpdate, db: Session = Depends(get_db)) -> GateRead:
+def update_gate(
+    gate_id: int,
+    data: GateUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> GateRead:
     """Update an existing gate."""
     gate = gate_service.update_gate(db, gate_id, data)
     return GateRead.model_validate(gate)
 
 
 @router.delete("/{gate_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete gate")
-def delete_gate(gate_id: int, db: Session = Depends(get_db)) -> None:
+def delete_gate(
+    gate_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> None:
     """Delete a gate by ID."""
     gate_service.delete_gate(db, gate_id)

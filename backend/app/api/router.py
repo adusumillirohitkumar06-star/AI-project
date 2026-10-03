@@ -13,11 +13,13 @@ from app.api.routes import (
     scheduling,
     simulation,
     terminals,
+    auth,
 )
 
 api_router = APIRouter(prefix="/api/v1")
 
 # Include sub-routers
+api_router.include_router(auth.router)
 api_router.include_router(health.router)
 api_router.include_router(airports.router)
 api_router.include_router(terminals.router)

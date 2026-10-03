@@ -127,7 +127,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/30 text-[11px] text-zinc-400 flex items-center justify-between">
           <span className="font-mono">CSP v3.0 / API v1</span>
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px] font-mono">
-            Phase 5
+            Production v1.0
           </span>
         </div>
       </aside>

@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { useBackendHealth } from "@/hooks/useBackendHealth";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
 export function Header({ onToggleSidebar }: HeaderProps) {
   const pathname = usePathname();
   const { data, loading, error, refetch } = useBackendHealth();
+  const { user, logout } = useAuth();
 
   // Compute a readable title from pathname
   const getPageTitle = (path: string) => {
@@ -120,6 +122,22 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           </svg>
           API Docs
         </a>
+
+        {/* User Menu */}
+        {user && (
+          <div className="flex items-center gap-3 border-l border-zinc-200 dark:border-zinc-800 pl-3">
+            <div className="text-right hidden sm:block">
+              <div className="text-xs font-medium">{user.name}</div>
+              <div className="text-[10px] text-zinc-500 uppercase">{user.role}</div>
+            </div>
+            <button
+              onClick={logout}
+              className="text-xs text-red-600 dark:text-red-400 hover:underline"
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -5,7 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_operator_or_above
 from app.models.flight import FlightPriority, FlightStatus, FlightType
+from app.models.user import User
 from app.schemas.common import PaginatedResponse
 from app.schemas.delay import FlightDelayRequest, FlightDelayResponse
 from app.schemas.flight import FlightCreate, FlightRead, FlightUpdate
@@ -66,7 +68,11 @@ def get_flight(flight_id: int, db: Session = Depends(get_db)) -> FlightRead:
 
 
 @router.post("", response_model=FlightRead, status_code=status.HTTP_201_CREATED, summary="Create flight")
-def create_flight(data: FlightCreate, db: Session = Depends(get_db)) -> FlightRead:
+def create_flight(
+    data: FlightCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> FlightRead:
     """Create a new flight with schedule and airport verification."""
     flight = flight_service.create_flight(db, data)
     return FlightRead.model_validate(flight)
@@ -74,14 +80,23 @@ def create_flight(data: FlightCreate, db: Session = Depends(get_db)) -> FlightRe
 
 @router.put("/{flight_id}", response_model=FlightRead, summary="Update flight")
 @router.patch("/{flight_id}", response_model=FlightRead, summary="Patch flight")
-def update_flight(flight_id: int, data: FlightUpdate, db: Session = Depends(get_db)) -> FlightRead:
+def update_flight(
+    flight_id: int,
+    data: FlightUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> FlightRead:
     """Update an existing flight."""
     flight = flight_service.update_flight(db, flight_id, data)
     return FlightRead.model_validate(flight)
 
 
 @router.delete("/{flight_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete flight")
-def delete_flight(flight_id: int, db: Session = Depends(get_db)) -> None:
+def delete_flight(
+    flight_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> None:
     """Delete a flight by ID."""
     flight_service.delete_flight(db, flight_id)
 
@@ -95,6 +110,7 @@ def apply_flight_delay(
     flight_id: int,
     request: FlightDelayRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
 ) -> FlightDelayResponse:
     """Apply an operational delay, detect gate collisions, and trigger CSP rescheduling if necessary."""
     return delay_service.apply_flight_delay(db, flight_id, request)

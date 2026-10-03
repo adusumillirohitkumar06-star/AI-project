@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_operator_or_above
+from app.models.user import User
 from app.schemas.common import PaginatedResponse
 from app.schemas.scheduling import ScheduleSolveRequest, ScheduleSolveResponse
 from app.schemas.solver import SolverRunRead
@@ -12,7 +14,11 @@ router = APIRouter(prefix="/scheduling", tags=["AI Scheduling & CSP Solver"])
 
 
 @router.post("/solve", response_model=ScheduleSolveResponse, summary="Execute CSP Gate Allocation Solver")
-def solve_schedule(request: ScheduleSolveRequest, db: Session = Depends(get_db)) -> ScheduleSolveResponse:
+def solve_schedule(
+    request: ScheduleSolveRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_operator_or_above),
+) -> ScheduleSolveResponse:
     """Run the pure Python CSP engine on airport flights and gates, persisting results transactionally."""
     return scheduling_service.solve_and_persist(db, request)
 
