@@ -13,11 +13,20 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     
-    # Security placeholders for future phases
+    # Security settings
     SECRET_KEY: str = "dev-insecure-secret-key-change-in-production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     
-    # Database placeholder for future phases
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/airport_pbl"
+    # Database settings & connection pooling
+    DATABASE_URL: str = "sqlite:///./airport.db"
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+    
+    # Production Hardening
+    ENABLE_SECURITY_HEADERS: bool = True
+    RATE_LIMIT_LOGIN_PER_MINUTE: int = 60
     
     # CORS Configuration
     CORS_ORIGINS: List[str] = [

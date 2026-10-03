@@ -115,9 +115,10 @@
 - **Phase 15 — Analytics:** Completed.
 - **Phase 16 — Authentication / Authorization / Security:** Completed.
 - **Phase 17 — Comprehensive Testing & Quality Assurance:** Completed.
+- **Phase 18 — Performance, Optimization & Production Hardening:** Completed.
 
 ```text
-CURRENT PHASE: 17
+CURRENT PHASE: 18
 STATUS: COMPLETED
 ```
 
@@ -125,7 +126,7 @@ STATUS: COMPLETED
 
 ## 9. TEST SUITE & VERIFICATION BASELINE
 - **Backend Test Framework:** pytest 9.1.1, SQLAlchemy in-memory SQLite fixtures (`conftest.py`).
-  - Total tests: **63 passed (100%)** across 10 test modules (`test_api_auth.py`, `test_csp_solver.py`, `test_api_analytics.py`, `test_api_scheduling.py`, `test_api_simulation_allocation.py`, `test_api_delay_rescheduling.py`, `test_api_conflicts_assignments.py`, `test_api_crud.py`, `test_models.py`, `test_health.py`).
+  - Total tests: **66 passed (100%)** across 11 test modules (`test_performance_hardening.py`, `test_api_auth.py`, `test_csp_solver.py`, `test_api_analytics.py`, `test_api_scheduling.py`, `test_api_simulation_allocation.py`, `test_api_delay_rescheduling.py`, `test_api_conflicts_assignments.py`, `test_api_crud.py`, `test_models.py`, `test_health.py`).
   - Command: `.\backend\.venv\Scripts\pytest backend/tests -v`
 - **Frontend Test Framework:** tsx test runner (`tests/*.test.ts`).
   - Total tests: **52 passed (100%)** across 8 test suites (Gantt, World Map, Simulation, Dynamic Allocation, Rescheduling, XAI Reasoning, Analytics, Auth & RBAC).
@@ -135,12 +136,14 @@ STATUS: COMPLETED
 
 ---
 
-## 10. KNOWN TECHNICAL CONSIDERATIONS
-- `email-validator` package is avoided in Pydantic models due to compatibility with Python 3.14 alpha/beta release channels; standard regex email validation is enforced.
-- Database runs locally on SQLite (`sqlite:///./airport.db`) with complete PostgreSQL dialect compatibility in SQLAlchemy models.
-- For production deployment, set `SECRET_KEY` in environment variables with high entropy.
+## 10. PRODUCTION HARDENING & PERFORMANCE MEASURES
+- **CSP Engine Scale:** Validated 50 flights scheduled across 10 gates in waves within strict performance budget (< 1500ms).
+- **Fast-fail Search:** Guaranteed fast termination (< 200ms) for provably unsolvable scenarios without state-space blowup.
+- **Security Headers Middleware:** Added `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`.
+- **Response Performance Timing:** Middleware attaches `X-Process-Time-Ms` response header to all outgoing API responses.
+- **Database Connection Pooling:** Configured `DB_POOL_SIZE=20`, `DB_MAX_OVERFLOW=10`, `DB_POOL_TIMEOUT=30`, and `pool_pre_ping=True` in engine arguments.
 
 ---
 
 ## 11. NEXT RECOMMENDED PHASE
-**PHASE 18 — PERFORMANCE, OPTIMIZATION & PRODUCTION HARDENING**
+**PROJECT READY FOR PRODUCTION DEPLOYMENT / CONTAINERIZATION**

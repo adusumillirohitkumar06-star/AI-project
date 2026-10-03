@@ -18,6 +18,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger("ai_airport")
 
+from contextlib import asynccontextmanager
+from app.core.database import Base, engine
+from app.core.init_db import init_db
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize DB tables and seed data if not running tests
+    if settings.ENVIRONMENT != "testing":
+        try:
+            Base.metadata.create_all(bind=engine)
+            init_db()
+        except Exception as e:
+            logger.warning("Lifespan database initialization warning: %s", str(e))
+    yield
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -25,6 +40,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -35,6 +51,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_security_and_performance_headers(request: Request, call_next):
+    """Enforce production security headers and request performance telemetry."""
+    import time
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    process_time_ms = (time.perf_counter() - start_time) * 1000.0
+    
+    # Performance telemetry
+    response.headers["X-Process-Time-Ms"] = f"{process_time_ms:.2f}"
+    
+    # Production security headers
+    if settings.ENABLE_SECURITY_HEADERS:
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    
+    return response
 
 
 # Standard Error Handling Handlers

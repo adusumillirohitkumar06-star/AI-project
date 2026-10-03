@@ -10,7 +10,12 @@ def get_engine_args(url: str) -> dict:
     """Return appropriate engine kwargs based on database dialect."""
     if url.startswith("sqlite"):
         return {"connect_args": {"check_same_thread": False}}
-    return {"pool_pre_ping": True}
+    return {
+        "pool_size": settings.DB_POOL_SIZE,
+        "max_overflow": settings.DB_MAX_OVERFLOW,
+        "pool_timeout": settings.DB_POOL_TIMEOUT,
+        "pool_pre_ping": True,
+    }
 
 
 # Create engine
